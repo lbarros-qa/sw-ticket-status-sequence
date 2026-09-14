@@ -1,8 +1,4 @@
-## Purpose
-
-Give a QA junior or business reader a single interactive teaching diagram of the team's Jira ticket workflow — all 12 statuses, the happy path plus QA-fail and reopen, live check before production, and how board columns map onto those statuses — so they can follow a ticket without asking a senior.
-
-## Requirements
+## MODIFIED Requirements
 
 ### Requirement: The diagram models the full ticket status machine
 

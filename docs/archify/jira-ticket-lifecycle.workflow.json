@@ -1,0 +1,103 @@
+{
+  "schema_version": 2,
+  "diagram_type": "workflow",
+  "meta": {
+    "title": "Jira Ticket Lifecycle - Web Content Updates",
+    "output": "docs/jira-ticket-lifecycle.html",
+    "locale": "en",
+    "quality_profile": "showcase",
+    "animation": "trace",
+    "views": [
+      {
+        "id": "happy-path",
+        "label": "Happy path",
+        "focus": ["open", "in_analysis", "ready_for_intake", "ready_for_development", "in_development", "ready_for_qa", "in_qa", "uat_review", "in_uat", "ready_for_deployment", "acceptance", "closed"],
+        "note": "The full path from triage to closed, including live check before production."
+      },
+      {
+        "id": "qa-fail-loop",
+        "label": "QA fail loop",
+        "focus": ["ready_for_development", "in_development", "ready_for_qa", "in_qa"],
+        "note": "QA rejects the build: the ticket returns to developers for rework."
+      },
+      {
+        "id": "reopen-path",
+        "label": "Reopen path",
+        "focus": ["closed", "open"],
+        "note": "Closed is not final: reopen sends the ticket back to triage."
+      }
+    ]
+  },
+  "lanes": [
+    { "id": "intake", "label": "Triage" },
+    { "id": "dev", "label": "Development" },
+    { "id": "qa", "label": "QA" },
+    { "id": "uat", "label": "Business Review" },
+    { "id": "publish", "label": "Publish" },
+    { "id": "done", "label": "Done" }
+  ],
+  "mainPath": ["open", "in_analysis", "ready_for_intake", "ready_for_development", "in_development", "ready_for_qa", "in_qa", "uat_review", "in_uat", "acceptance", "closed"],
+  "nodes": [
+    { "id": "open", "lane": "intake", "col": 0, "type": "external", "label": "OPEN", "sublabel": "created; owner triages" },
+    { "id": "in_analysis", "lane": "intake", "col": 1, "type": "backend", "label": "IN ANALYSIS", "sublabel": "BA clarifies scope", "tag": "off-board" },
+    { "id": "ready_for_intake", "lane": "intake", "col": 2, "type": "external", "label": "READY FOR INTAKE", "sublabel": "queued for dev team", "tag": "off-board", "width": 120 },
+    { "id": "ready_for_development", "lane": "dev", "col": 2, "type": "external", "label": "READY FOR DEV", "sublabel": "waiting: dev picks up" },
+    { "id": "in_development", "lane": "dev", "col": 3, "type": "backend", "label": "IN DEV", "sublabel": "building change" },
+    { "id": "ready_for_qa", "lane": "qa", "col": 3, "type": "external", "label": "READY FOR QA", "sublabel": "waiting: QA slot" },
+    { "id": "in_qa", "lane": "qa", "col": 4, "type": "security", "label": "IN QA", "sublabel": "QA tests the build" },
+    { "id": "uat_review", "lane": "uat", "col": 4, "type": "backend", "label": "UAT FEEDBACK", "sublabel": "gathering feedback", "width": 100 },
+    { "id": "in_uat", "lane": "uat", "col": 5, "type": "backend", "label": "IN UAT", "sublabel": "business signs off" },
+    { "id": "ready_for_deployment", "lane": "publish", "col": 4, "type": "external", "label": "READY FOR PUBLISH...", "sublabel": "staged; publish pending", "width": 150 },
+    { "id": "acceptance", "lane": "publish", "col": 5, "type": "security", "label": "LIVE CHECK", "sublabel": "owner checks live site" },
+    { "id": "closed", "lane": "done", "col": 5, "type": "external", "label": "CLOSED", "sublabel": "done; can reopen", "tag": "off-board" }
+  ],
+  "edges": [
+    { "from": "open", "to": "in_analysis", "role": "main" },
+    { "from": "in_analysis", "to": "ready_for_intake", "role": "main" },
+    { "from": "ready_for_intake", "to": "ready_for_development", "role": "main" },
+    { "from": "ready_for_development", "to": "in_development", "role": "main" },
+    { "from": "in_development", "to": "ready_for_qa", "role": "main" },
+    { "from": "ready_for_qa", "to": "in_qa", "role": "main" },
+    { "from": "in_qa", "to": "uat_review", "role": "main", "label": "QA passed" },
+    { "from": "in_qa", "to": "ready_for_development", "role": "return", "variant": "dashed", "label": "QA failed" },
+    { "from": "uat_review", "to": "in_uat", "role": "main" },
+    { "from": "in_uat", "to": "ready_for_deployment", "label": "UAT passed" },
+    { "from": "ready_for_deployment", "to": "acceptance", "label": "Ready for Publishing" },
+    { "from": "in_uat", "to": "acceptance", "role": "main", "label": "to live check" },
+    { "from": "acceptance", "to": "closed", "role": "main", "label": "Accepted" },
+    { "from": "closed", "to": "open", "role": "return", "variant": "dashed", "label": "Reopen" }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "Board column map",
+      "items": [
+        "READY FOR DEV / IN DEV = development pair",
+        "READY FOR QA / IN QA = QA pair",
+        "UAT FEEDBACK / IN UAT = business review",
+        "READY FOR PUBLISH... = staging queue",
+        "LIVE CHECK = acceptance live check",
+        "OPEN, IN ANALYSIS, READY FOR INTAKE stay off-board"
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "Board conventions",
+      "items": [
+        "{blocked} prefix: ticket cannot move",
+        "{waiting for other tickets}: release-order hold",
+        "Flag marker: needs attention; dates = due",
+        "'Any' badge: transitions from any status"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "Reading the loops",
+      "items": [
+        "QA fail returns the ticket to READY FOR DEV",
+        "Reopen is the only way out of CLOSED",
+        "Step-back and Any -> CLOSED exist in Jira but are not shown here"
+      ]
+    }
+  ]
+}
